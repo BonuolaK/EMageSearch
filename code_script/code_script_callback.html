@@ -1,0 +1,65 @@
+<style type="text/css">
+    /* Add your own form style overrides in your site stylesheet or in this style block. We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+</style> <div>
+    <input type="file" name="image" id="emage_search_file" accept=".jpeg,.jpg,.png" />
+    <button type="button" id="emage_search_btn">Search</button>
+</div>
+<div>
+    <span id="emage_search_msg"></span>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+<script type='text/javascript'>
+    // jquery is required function
+
+    function clearMsg(){
+        $('#emage_search_msg').html('');
+        $('#emage_search_msg').removeClass('error');
+    };
+
+    function addMessage(data) {
+        $('#emage_search_msg').html(data.message);
+        $('#emage_search_msg').addClass(data.hasError ? 'error' : 'success');
+    }
+
+    function uploadImage(data, callback) {
+        console.log($('#' + data.inputId));
+        var file = $('#' + data.inputId)[0].files[0];
+        var formData = new FormData(); formData.append('file', file);
+        addMessage({ message: 'loading...', hasError: false });
+        $.ajax({
+            url: '{{url}}/client/{{clientId}}/search',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                clearMsg();
+                console.log(data);
+                if (data.hasError)
+                {
+                    addMessage(data);
+                }
+                else {
+                    if (typeof callback === 'function')
+                    {
+                        callback(data);
+                    }
+                }
+            }
+        });
+    }
+
+    window.onload = function () {
+        if (window.jQuery) {
+            $('#emage_search_file').change(function () {
+                clearMsg(); var val = $(this).val().toLowerCase(), regex = new RegExp("(.*?)\.(jpeg|jpg|png)$");
+                if (!(regex.test(val))) { $(this).val(''); addMessage({ message: 'Please select JPEG, JPG or PNG files', hasError: true }); }
+            }); $('#emage_search_btn').click(function (e) {
+                clearMsg();
+                uploadImage({ inputId: 'emage_search_file' }, function (data) {
+                    // insert call back here
+                });
+            });
+        } else { console.log("--- Emage_Search requires JQUERY to Work"); }
+    };
+</script>
